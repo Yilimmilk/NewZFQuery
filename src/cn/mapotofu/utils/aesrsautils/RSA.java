@@ -106,6 +106,7 @@ public class RSA {
 		/** 得到Cipher对象对已用公钥加密的数据进行RSA解密 */
 		Cipher cipher = Cipher.getInstance(ConfigureEncryptAndDecrypt.RSA_ALGORITHM);
 		cipher.init(Cipher.DECRYPT_MODE, key);
+		//System.out.println("provider: "+cipher.getProvider().getClass().getName());
 		byte[] b1 = Base64.decodeBase64(cryptograph.getBytes());
 		/** 执行解密操作 */
 		byte[] b = cipher.doFinal(b1);

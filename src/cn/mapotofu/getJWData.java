@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -41,84 +42,109 @@ public class getJWData extends HttpServlet {
 
     protected static final String SERVER_ERR_CODE = "500";
 
-    protected static final String clientPublicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzkBgNxJ0h0oV4HsNUf+0TH9LT" +
-            "+WD3VyaXmlWMrioWOA7/ksZCNpgINXT8aWKor2C0TE1jmInTZDzcvWoRiPWriUm+" +
-            "jg5LHt9LXUTVglZm7IOD5miqOb53sdlxbriK3vWEhiMEthDbGXSn3KaGKz5m0Uwy" +
-            "SX+ktjDdeRWevHpDowIDAQAB";
+    protected static final String clientPublicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCwzwrcAE4X4+9/cYFEfD7i04Bt" +
+            "FKJENBPyq/JMJxY6qR1GLl0izW8v7/uHdJkH6w4vqWvUz2olBj9NXfJbr06vW5IP" +
+            "jLm7HgQ0MkxR7pPKuvW0R/5G7+WuR9B0Tpk34p8NVPFOE0MFVHxcLP0k2mpvSlJb" +
+            "dGCGa8ZiZPE72qvZXwIDAQAB";
 
-    protected static final String serverPrivateKey = "MIICxjBABgkqhkiG9w0BBQ0wMzAbBgkqhkiG9w0BBQwwDgQIxZ/5cr0kHucCAggA" +
-            "MBQGCCqGSIb3DQMHBAhSczR4QnxvcwSCAoB9wo6jmQ/7z1AxCruGVE8NVnd0dZO4" +
-            "Hc2eKUnruECk4G81PEvUw8NjOqI5bENN8y/Y0wTWI13nokSRmX4BLeAxd4pl0Rgx" +
-            "k+v4ITcPRK9kkOxzgh3PLtWpQ6WS9jskN0ngZyzYXJR6FNY8d6rEcn07d9WxoghK" +
-            "1M/KZiCiNCbCnNG0o6J++yOl8sZn1wqxC9DK0hERf0u+xolIX7HswXEVGyvAYU1x" +
-            "VvEheWh9Iy634DNRwtw8GZt6wOKS1F4K/G7cWr0j8CmuYegc0IuCtVdGSRg0DxRJ" +
-            "8ShchOpVvLDroKwkOhXyeeZh6uPGJMcJjgs4j3Sw+/4YHoR+3F54XpekB6hV2E+e" +
-            "D1sxHWYmiIl6bwbKTLypzK2NhvbFjKOjcbPDq7Qhc2VSx9oKPWjwsZgLEi+mEU/y" +
-            "2UjwlNWTeBBvn3esEw/Ob8V/NZ9NBK8MFxUp7fUJFN1vVsHHlsNm5sM4SMAjJOsO" +
-            "/b+GpvPY2LiAm+1D24yx9Fa14Vkn2V+9a4jfN9lEH1xnKjAku4vtQXcKm4Q4zXQU" +
-            "pWmKrmr2ce1/3fAfZ5EINS3RB1s0+zU15xMUTr6tWeO9O3S9W6q+IRpb+ygfspAo" +
-            "anZn70d2eABj934CWuLDjXiYh5yxfFcPXMicCKGZSvvz8YLVahN78iJbdt9R6kwC" +
-            "UCFAFrgZ3VDtaHfO9w/m3HaJYwBbbrcpgHq7OwEvm9m55EeEUvJ8BChdMAubs2pl" +
-            "VZvFc8Sqjh05A2aEZ7im0Eerjy3qmrR7GjPR7XCvywck4c1X9XMYMuRb0S21wHhg" +
-            "sS4aIK0JgtMs1nITLtWw8HH+VaRkBRfsQdEAQymdENTwkrVUpM7qj2nN";
+    protected static final String serverPrivateKey = "MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAO/caHJAsRjcL6a3" +
+            "N0dHy91OC2ZWkhdGRtdyYmVX9SNXoYyTdx6f64Y4+QR4cSy0GOlzqdsweHb6tc2g" +
+            "H3KL0rMQlcaJCsKBghC/n1xu4xsafy8ehg/xWVsI+uhjJ1SkMtnsIaUkN+REh8Ej" +
+            "MTuCQqzzEGYxgUme6oklqD4eEYfdAgMBAAECgYAw3+6AaWIsuKEVDXw8EAsgWwjD" +
+            "n5xBFdbVi780+0k+HFsUs++v09JAFVfYa1pUS5ZP63uO6D+Dru5gqeH+izMxWIyj" +
+            "FtJVVfwo9DGIgxZ8giOE/5Htp2bCOhs4FCI7lOXptPWv8jbuXc2+z5OdWbPyAj8z" +
+            "3GwgdLBrHslAoKMfwQJBAPyXY8vCLUfu2bPur+TMOTTV7I8yxb81bTc7ZU8Wrr4a" +
+            "6oq2dR5CRw9mRhmRXRpvRJUdRIkX57v4cx5NLAcQsCUCQQDzGQoRae+qCaGMiyAC" +
+            "Ygmk8RajlvnO+9T1Qxfj+uBFEqHqdaMfoXvWT/nXxgnIJpy8jREaF3hWpAc+mOzc" +
+            "/69ZAkAyMmPCunQFN5JMD8Mk1PEJbvnz+0MRHKz3rPYVIYzYesDhkCD2QnWcudZ0" +
+            "fk7iUfpvJ8HW/Mkwsc8u1mdJgCeBAkEA7Bz34G4KcBcmp8FBd88NGv1nRcEQJXAI" +
+            "Kafe/nnfdndgeL+FjuVjyIapXmBlg9etCJ3jbHo7UbvDpZMXDJfzEQJAbeygfbAC" +
+            "14kUsyr/WzwrsjJt8RvXWJOkiQrPK7m1EdJXiIlYr6rD0TTxd/0NHaTuVCmhQIg6" +
+            "SW4hzU2zDOvHVw==";
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
+        decryptAndGetData(request, response);
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String requestData = request.getParameter("data");
-        String keyData = request.getParameter("key");
-        if (requestData == null||keyData==null) {
+        decryptAndGetData(request, response);
+    }
+
+    protected void decryptAndGetData(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String clientData, flagData, requestData, keyData, studentidData, passwordData, featuresData, resultJson, studentid, password, features, statusCode;
+        boolean isFlagTest;
+        Map<String, String> jsonDataMap, errData, successData;
+
+        clientData = request.getParameter("client");
+        flagData = request.getParameter("flag");
+        requestData = request.getParameter("data");
+        keyData = request.getParameter("key");
+        if (clientData != null && flagData != null) {
+            if (flagData.equals("normal")) {
+                isFlagTest = false;
+                if (requestData == null || keyData == null) return;
+            } else if (flagData.equals("test")) {
+                isFlagTest = true;
+                studentidData = request.getParameter("studentid");
+                passwordData = request.getParameter("password");
+                featuresData = request.getParameter("features");
+                if (studentidData == null || passwordData == null || featuresData == null) return;
+            } else {
+                return;
+            }
+        } else {
             return;
         }
-        String data = "";
-        Map<String,String> jsonDataMap = new HashMap<String,String>();
-        try {
-            data = decryptData(requestData,keyData,clientPublicKey,serverPrivateKey);
-            JSONObject jsonData = JSON.parseObject(data);
-            Iterator iter = jsonData.entrySet().iterator();
-            while (iter.hasNext()) {
-                Map.Entry entry = (Map.Entry) iter.next();
-                jsonDataMap.put(entry.getKey().toString(),entry.getValue().toString());
+        jsonDataMap = new HashMap<String, String>();
+        if (!isFlagTest) {
+            jsonDataMap = getClientAndDecrypt(clientData, requestData, keyData, clientPublicKey, serverPrivateKey);
+        } else {
+            Enumeration paramNames = request.getParameterNames();
+            while (paramNames.hasMoreElements()) {
+                String paramName = (String) paramNames.nextElement();
+                String[] paramValues = request.getParameterValues(paramName);
+                if (paramValues.length == 1) {
+                    String paramValue = paramValues[0];
+                    if (paramValue.length() != 0) {
+                        //System.out.println("参数：" + paramName + "=" + paramValue);
+                        jsonDataMap.put(paramName, paramValue);
+                    }
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        String resultJson = "";
-        String studentid = jsonDataMap.get("studentid");
-        String password = jsonDataMap.get("password");
-        String features = jsonDataMap.get("features");
-        String statusCode = jsonDataMap.get("status");
-        if ("421".equals(statusCode)){
-            resultJson = stringToJson(jsonDataMap);
-        }else {
-            System.out.println("----------当前是由"+studentid+"发出的"+features+"请求----------");
-            if (studentid == null||password==null||features==null){
-                Map<String,String> errData = new HashMap<String,String>();
-                errData.put("status",ERR_CODE_PARAMETER);
-                errData.put("info","请求参数有问题，去检查一下吧~ By Yili");
-                resultJson = stringToJson(errData);
-            }else {
-                int year,term;
+        studentid = jsonDataMap.get("studentid");
+        password = jsonDataMap.get("password");
+        features = jsonDataMap.get("features");
+        statusCode = jsonDataMap.get("status");
+        if (statusCode != null) {
+            resultJson = stringMapToJson(jsonDataMap);
+        } else {
+            System.out.println("----------" + flagData + ":" + clientData + ":当前是由" + studentid + "发出的" + features + "请求----------");
+            if (studentid == null || password == null || features == null) {
+                errData = new HashMap<String, String>();
+                errData.put("status", ERR_CODE_PARAMETER);
+                errData.put("info", "请求参数有问题，去检查一下吧~ By Yili");
+                resultJson = stringMapToJson(errData);
+            } else {
+                int year, term;
                 try {
-                    MainFunc connect = new MainFunc(studentid,password);
+                    MainFunc connect = new MainFunc(studentid, password);
                     connect.init();
-                    if(connect.beginLogin()){
-                        switch (features){
+                    if (connect.beginLogin()) {
+                        switch (features) {
                             case "dengluzhuangtai":
-                                Map<String,String> successData = new HashMap<String,String>();
-                                successData.put("status",SUCCESS_CODE_LOGIN);
-                                successData.put("info","登录成功");
-                                resultJson = stringToJson(successData);
+                                successData = new HashMap<String, String>();
+                                successData.put("status", SUCCESS_CODE_LOGIN);
+                                successData.put("info", "登录成功");
+                                resultJson = stringMapToJson(successData);
                                 break;
 
                             case "kechengbiao":
-                                year = Integer.parseInt(request.getParameter("year"));
-                                term = Integer.parseInt(request.getParameter("term"));
-                                resultJson = connect.getStudentTimetable(year,term);
+                                year = Integer.parseInt(jsonDataMap.get("year"));
+                                term = Integer.parseInt(jsonDataMap.get("term"));
+                                resultJson = connect.getStudentTimetable(year, term);
                                 break;
 
                             case "xueshengxinxi":
@@ -126,15 +152,15 @@ public class getJWData extends HttpServlet {
                                 break;
 
                             case "chengji":
-                                year = Integer.parseInt(request.getParameter("year"));
-                                term = Integer.parseInt(request.getParameter("term"));
-                                resultJson = connect.getStudentGrade(year,term);
+                                year = Integer.parseInt(jsonDataMap.get("year"));
+                                term = Integer.parseInt(jsonDataMap.get("term"));
+                                resultJson = connect.getStudentGrade(year, term);
                                 break;
 
                             case "kaoshixinxi":
-                                year = Integer.parseInt(request.getParameter("year"));
-                                term = Integer.parseInt(request.getParameter("term"));
-                                resultJson = connect.getExamInfo(year,term);
+                                year = Integer.parseInt(jsonDataMap.get("year"));
+                                term = Integer.parseInt(jsonDataMap.get("term"));
+                                resultJson = connect.getExamInfo(year, term);
                                 break;
 
                             case "kechengxiaoxi":
@@ -142,28 +168,28 @@ public class getJWData extends HttpServlet {
                                 break;
 
                             default:
-                                Map<String,String> errData = new HashMap<String,String>();
-                                errData.put("status",ERR_CODE_FEATURES);
-                                errData.put("info","你请求的features不属于咱们火星局管理咧～ By Yili");
-                                resultJson = stringToJson(errData);
+                                errData = new HashMap<String, String>();
+                                errData.put("status", ERR_CODE_FEATURES);
+                                errData.put("info", "你请求的features不属于咱们火星局管理咧～ By Yili");
+                                resultJson = stringMapToJson(errData);
                                 break;
                         }
-                    }else {
-                        Map<String,String> errData = new HashMap<String,String>();
-                        errData.put("status",ERR_CODE_STUDENTNUM);
-                        errData.put("info","你学号或者密码错了吧～ By Yili");
-                        resultJson = stringToJson(errData);
+                    } else {
+                        errData = new HashMap<String, String>();
+                        errData.put("status", ERR_CODE_STUDENTNUM);
+                        errData.put("info", "你学号或者密码错了吧～ By Yili");
+                        resultJson = stringMapToJson(errData);
                     }
                     connect.logout();
                 } catch (Exception e) {
-                    Map<String,String> errData = new HashMap<String,String>();
-                    errData.put("status",SERVER_ERR_CODE);
-                    errData.put("info","糟了，你请求的内容出错了，你要不检查一下你的代码？？？或者稍后再来试试吧～ By Yili");
-                    resultJson = stringToJson(errData);
+                    errData = new HashMap<String, String>();
+                    errData.put("status", SERVER_ERR_CODE);
+                    errData.put("info", "糟了，你请求的内容出错了，你要不检查一下你的代码？？？或者稍后再来试试吧～ By Yili");
+                    resultJson = stringMapToJson(errData);
                     e.printStackTrace();
                 }
             }
-            System.out.println("----------已返回由"+studentid+"发出的"+features+"请求结果数据----------");
+            System.out.println("----------已返回由" + studentid + "发出的" + features + "请求结果数据----------\n\n");
         }
 //        String client = request.getParameter("client");
 //        if (client == "android"){
@@ -177,31 +203,61 @@ public class getJWData extends HttpServlet {
         pw.flush();
     }
 
+    //获取client并解密
+    protected static Map<String, String> getClientAndDecrypt(String clientData, String requestData, String keyData, String clientPublicKey, String serverPrivateKey) {
+        Map<String, String> map = new HashMap<String, String>();
+        switch (clientData) {
+            case "android":
+                try {
+                    String data = decryptData(requestData, keyData, clientPublicKey, serverPrivateKey);
+                    JSONObject jsonData = JSON.parseObject(data);
+                    Iterator iter = jsonData.entrySet().iterator();
+                    while (iter.hasNext()) {
+                        Map.Entry entry = (Map.Entry) iter.next();
+                        map.put(entry.getKey().toString(), entry.getValue().toString());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+
+            case "ios":
+
+                break;
+
+            default:
+                map.put("status", ERR_CODE_PARAMETER);
+                map.put("info", "client参数出错");
+                break;
+        }
+        return map;
+    }
+
     //解密数据
-    protected static String decryptData(String inputData,String inputEncryptkey,String clientPublicKey,String serverPrivateKey) throws Exception {
+    protected static String decryptData(String inputData, String inputEncryptkey, String clientPublicKey, String serverPrivateKey) throws Exception {
         // 验签
         boolean passSign = EncryUtil.checkDecryptAndSign(inputData, inputEncryptkey, clientPublicKey, serverPrivateKey);
 
         if (passSign) {
             // 验签通过
-            String aeskey = RSA.decrypt(inputEncryptkey,serverPrivateKey);
+            String aeskey = RSA.decrypt(inputEncryptkey, serverPrivateKey);
             String data = ConvertUtils.hexStringToString(AES.decryptFromBase64(inputData, aeskey));
             return data;
         } else {
-            Map<String,String> data = new HashMap<String,String>();
-            data.put("status",ERR_CODE_DECRYPT);
-            data.put("info","数据解密失败");
-            return stringToJson(data);
+            Map<String, String> data = new HashMap<String, String>();
+            data.put("status", ERR_CODE_DECRYPT);
+            data.put("info", "数据解密失败");
+            return stringMapToJson(data);
         }
     }
 
     //将String组装成json
-    protected static String stringToJson(Map <String,String> data) {
+    protected static String stringMapToJson(Map<String, String> data) {
         JSONObject jsonObject = new JSONObject();
-        for(Map.Entry<String, String> entry : data.entrySet()){
+        for (Map.Entry<String, String> entry : data.entrySet()) {
             String mapKey = entry.getKey();
             String mapValue = entry.getValue();
-            jsonObject.put(mapKey,mapValue);
+            jsonObject.put(mapKey, mapValue);
         }
         return jsonObject.toJSONString();
     }
