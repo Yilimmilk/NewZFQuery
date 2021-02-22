@@ -25,6 +25,7 @@ public class getJWData extends HttpServlet {
      * @apiNote 状态码:
      *     200：请求成功；
      *     221；登录成功；
+     *     222；登录成功，但教务系统返回错误信息；
      *     421：解密失败；
      *     422：参数错误；
      *     423：学号密码错误；
@@ -34,6 +35,7 @@ public class getJWData extends HttpServlet {
 
     protected static final String SUCCESS_CODE = "200";
     protected static final String SUCCESS_CODE_LOGIN = "221";
+    protected static final String SUCCESS_CODE_SERVER_MSG = "222";
 
     protected static final String ERR_CODE_DECRYPT = "421";
     protected static final String ERR_CODE_PARAMETER = "422";
@@ -119,14 +121,14 @@ public class getJWData extends HttpServlet {
         features = jsonDataMap.get("features");
         statusCode = jsonDataMap.get("status");
         if (statusCode != null) {
-            resultJson = stringMapToJson(jsonDataMap);
+            resultJson = JSON.toJSONString(jsonDataMap);
         } else {
             System.out.println("----------" + flagData + ":" + clientData + ":当前是由" + studentid + "发出的" + features + "请求----------");
             if (studentid == null || password == null || features == null) {
                 errData = new HashMap<String, String>();
                 errData.put("status", ERR_CODE_PARAMETER);
                 errData.put("info", "请求参数有问题，去检查一下吧~ By Yili");
-                resultJson = stringMapToJson(errData);
+                resultJson = JSON.toJSONString(errData);
             } else {
                 int year, term;
                 try {
@@ -138,13 +140,19 @@ public class getJWData extends HttpServlet {
                                 successData = new HashMap<String, String>();
                                 successData.put("status", SUCCESS_CODE_LOGIN);
                                 successData.put("info", "登录成功");
-                                resultJson = stringMapToJson(successData);
+                                resultJson = JSON.toJSONString(successData);
                                 break;
 
                             case "kechengbiao":
                                 year = Integer.parseInt(jsonDataMap.get("year"));
                                 term = Integer.parseInt(jsonDataMap.get("term"));
                                 resultJson = connect.getStudentTimetable(year, term);
+                                if (resultJson == null){
+                                    successData = new HashMap<String, String>();
+                                    successData.put("status", SUCCESS_CODE_SERVER_MSG);
+                                    successData.put("info", "当前并没有安排课程");
+                                    resultJson = JSON.toJSONString(successData);
+                                }
                                 break;
 
                             case "xueshengxinxi":
@@ -171,21 +179,21 @@ public class getJWData extends HttpServlet {
                                 errData = new HashMap<String, String>();
                                 errData.put("status", ERR_CODE_FEATURES);
                                 errData.put("info", "你请求的features不属于咱们火星局管理咧～ By Yili");
-                                resultJson = stringMapToJson(errData);
+                                resultJson = JSON.toJSONString(errData);
                                 break;
                         }
                     } else {
                         errData = new HashMap<String, String>();
                         errData.put("status", ERR_CODE_STUDENTNUM);
                         errData.put("info", "你学号或者密码错了吧～ By Yili");
-                        resultJson = stringMapToJson(errData);
+                        resultJson = JSON.toJSONString(errData);
                     }
                     connect.logout();
                 } catch (Exception e) {
                     errData = new HashMap<String, String>();
                     errData.put("status", SERVER_ERR_CODE);
                     errData.put("info", "糟了，你请求的内容出错了，你要不检查一下你的代码？？？或者稍后再来试试吧～ By Yili");
-                    resultJson = stringMapToJson(errData);
+                    resultJson = JSON.toJSONString(errData);
                     e.printStackTrace();
                 }
             }
@@ -222,7 +230,7 @@ public class getJWData extends HttpServlet {
                 break;
 
             case "ios":
-
+                //TODO 判断ios客户端逻辑
                 break;
 
             default:
@@ -247,18 +255,7 @@ public class getJWData extends HttpServlet {
             Map<String, String> data = new HashMap<String, String>();
             data.put("status", ERR_CODE_DECRYPT);
             data.put("info", "数据解密失败");
-            return stringMapToJson(data);
+            return JSON.toJSONString(data);
         }
-    }
-
-    //将String组装成json
-    protected static String stringMapToJson(Map<String, String> data) {
-        JSONObject jsonObject = new JSONObject();
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            String mapKey = entry.getKey();
-            String mapValue = entry.getValue();
-            jsonObject.put(mapKey, mapValue);
-        }
-        return jsonObject.toJSONString();
     }
 }
